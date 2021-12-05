@@ -252,26 +252,40 @@ namespace calculation
     }
 
     /*-----------------------------------------------------------------
+     * resursive calculating function
+     * resursively calculates series
+     * used by the main calculation function
+     * n - number of series
+     */
+    double calculate_function_series(const double x,
+        const double accuracy, unsigned int* n, double a_n)
+    {
+        if (abs(a_n) <= accuracy) 
+        {
+            return 0; //base case
+        }
+        
+        const double q = 3 * x / 2;
+        a_n = a_n * q;
+        (*n)++;
+
+        return a_n + calculate_function_series(
+            x, accuracy, n, a_n);
+    }
+
+    /*-----------------------------------------------------------------
      * the main calculating function
      * calculates 6 * x / (2 - 3 * x) via series
+     * usinng recursive overload
      * returns the sum of series
      * n - number of series
      */
     double calculate_function_series(const double x,
         const double accuracy, unsigned int* n)
     {
-        double a_n = 3 * x;
-        double sum = a_n;
-        double q   = 3 * x / 2;
-
-        *n = 1;
-        for (; abs(a_n) >= accuracy; ++ * n)
-        {
-            a_n = a_n * q;
-            sum += a_n;
-            //printf("\tn = %d\ta_n = %.31lf\tsum = %.35lf\n", *n, a_n, sum);
-        }
-        return sum;
+        double a_n = 3 * x; //default start value
+        (*n) = 1;        
+        return a_n + calculate_function_series(x, accuracy, n, a_n);
     }
 
     /*-----------------------------------------------------------------
