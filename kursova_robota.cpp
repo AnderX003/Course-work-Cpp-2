@@ -27,6 +27,13 @@ namespace console
         system("CLS");
     }
 
+    void clear_stream()
+    {
+        std::cin.clear();
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
     char read_char()
     {
         char input_text;
@@ -159,6 +166,8 @@ namespace settings
      */
     calculation_settings read_calculation_parameters()
     {
+        console::clear_stream();
+
         calculation_settings settings;
 
         printf("Reading calculation parameters from text file\n"
