@@ -43,9 +43,9 @@ namespace console
 
     const char* table_line()
     {
-        return "-------------------------------------------------"
-           "-----------------------------------------------------"
-           "-----------------------------------------------------";
+        return "------------------------------------"
+            "---------------------------------------"
+            "---------------------------------------";
     }
 }
 
@@ -144,20 +144,14 @@ namespace settings
      */
     bool validate_settings(const calculation_settings settings)
     {
-        if (
-            -2 / 3.0 < settings.x_start &&
-            settings.x_start < 2 / 3.0 &&
-            settings.x_start < settings.x_end &&
-            settings.x_end < 2 / 3.0 &&
-            0 < settings.step &&
-            settings.step < settings.x_end - settings.x_start &&
-            0 < settings.accuracy &&
-            settings.accuracy < 1
-            )
-        {
-            return true;
-        }
-        return false;
+        return settings.x_start > -2 / 3.0 &&
+               settings.x_start < 2 / 3.0 &&
+               settings.x_start < settings.x_end&&
+               settings.x_end < 2 / 3.0 &&
+               settings.step > 0 &&
+               settings.step < settings.x_end - settings.x_start &&
+               settings.accuracy > 0 &&
+               settings.accuracy < 1;
     }
 
     /*-----------------------------------------------------------------
@@ -209,12 +203,12 @@ namespace settings
             } // end of if (validate_settings(settings))
             else //file text has wrong format
             {
-                printf("Wrong text format.\n");
+                printf("Wrong values.\n");
             }
         } // end of if (file != nullptr)
         else //file was not opened
         {
-            printf("Could read file\n");
+            printf("Could open file\n");
         }
 
         console::pause();
@@ -247,7 +241,6 @@ namespace calculation
 
         bool               is_empty            = true;
         unsigned int       values_amount       = 1;
-        unsigned int       symbols_after_comma = 0;
         calculation_point* points              = nullptr; //results array
     };
 
@@ -275,7 +268,7 @@ namespace calculation
         }
         
         const double q = 3 * x / 2;
-        a_n = a_n * q;
+        a_n *= q;
         (*n)++;
 
         return a_n + calculate_function_series(
@@ -336,14 +329,13 @@ namespace calculation
             "Start point = %lf;\n"
             "End point = %lf;\n"
             "Step = %lf;\n"
-            "Accuracy = %.*lf;\n\n",
+            "Accuracy = %.21lf;\n\n",
             results.settings.x_start,
             results.settings.x_end,
             results.settings.step,
-            results.symbols_after_comma,
             results.settings.accuracy);
 
-        printf("%s\n| %-34s| %-34s| %-34s| %-34s| Members |\n%s\n",
+        printf("%s\n| %-20s| %-25s| %-25s| %-25s| Members |\n%s\n",
             console::table_line(),
             "x", "series(x)",
             "f(x)", "Error",
@@ -351,12 +343,9 @@ namespace calculation
 
         for (unsigned int i = 0; i < results.values_amount; ++i)
         {
-            printf("| %-34.*lf| %-34.*lf| %-34.*lf| %-34.31lf| %-8d|\n",
-                results.symbols_after_comma,
+            printf("| %-20.16lf| %-25.20lf| %-25.20lf| %-25.21lf| %-8d|\n",
                 results.points[i].x,
-                results.symbols_after_comma,
                 results.points[i].y_series,
-                results.symbols_after_comma,
                 results.points[i].y,
                 results.points[i].error,
                 results.points[i].iterations_amount);
@@ -367,7 +356,7 @@ namespace calculation
     }
 
     /*-----------------------------------------------------------------
-     * function obtains calculatin settings
+     * function obtains calculatoin settings
      * creates calculation_results object
      * calculates and saves results to calculation_results.points array
      * prints results as table
@@ -386,16 +375,6 @@ namespace calculation
 
         //results contains calculation settings
         results.settings = settings;
-
-
-        //caclulatings how many symbols after comma we need
-        //depending on the accuracy
-        //for instanse 0.0001 means 4 symbols after comma
-        for (; results.settings.accuracy < pow(0.11,
-            results.symbols_after_comma + 1);)
-        {
-            results.symbols_after_comma++;
-        }
 
         //caclulatings how many values (points) we need
         //to calculate depending on the step, start and end
@@ -432,14 +411,13 @@ namespace saving
             "Start point = %lf;\n"
             "End point = %lf;\n"
             "Step = %lf;\n"
-            "Accuracy = %.*lf;\n\n",
+            "Accuracy = %.21lf;\n\n",
             results.settings.x_start,
             results.settings.x_end,
             results.settings.step,
-            results.symbols_after_comma,
             results.settings.accuracy);
 
-        fprintf(file, "%s\n| %-34s| %-34s| %-34s| %-34s| Members |\n%s\n",
+        fprintf(file, "%s\n| %-20s| %-25s| %-25s| %-25s| Members |\n%s\n",
             console::table_line(),
             "x", "series(x)",
             "f(x)", "Error",
@@ -448,12 +426,9 @@ namespace saving
         for (unsigned int i = 0; i < results.values_amount; ++i)
         {
             fprintf(file,
-                "| %-34.*lf| %-34.*lf| %-34.*lf| %-34.31lf| %-8d|\n",
-                results.symbols_after_comma,
+                "| %-20.16lf| %-25.20lf| %-25.20lf| %-25.21lf| %-8d|\n",
                 results.points[i].x,
-                results.symbols_after_comma,
                 results.points[i].y_series,
-                results.symbols_after_comma,
                 results.points[i].y,
                 results.points[i].error,
                 results.points[i].iterations_amount);
@@ -518,7 +493,7 @@ int main()
     calculation::calculation_results  results;
     bool exit_trigger = false;
 
-    do
+    while (!exit_trigger)
     {
         printf("Enter \"0\" to exit\n"
             "Enter \"1\" to input calculation parameters\n"
@@ -553,8 +528,7 @@ int main()
         default:
             break;
         }
-
-    } while (!exit_trigger);
+    }
 
     printf("Exiting...\n");
     delete[] results.points; //deleting points if exists
